@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import ChatArea, { Message } from "@/components/ChatArea";
 import InputBar from "@/components/InputBar";
+import OnboardingChecklist from "@/components/OnboardingChecklist";
 import { ChatSkeleton } from '@/components/Skeleton';
 
 export default function Home() {
@@ -9,7 +10,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate initial loading of the chat engine
     const timer = setTimeout(() => {
       setLoading(false);
     }, 0);
@@ -25,7 +25,6 @@ export default function Home() {
     
     setMessages(prev => [...prev, userMsg]);
 
-    // Simulate AI response
     setTimeout(() => {
       const aiMsg: Message = {
         role: 'assistant',
@@ -39,21 +38,25 @@ export default function Home() {
   };
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full relative overflow-hidden">
-      <div className="flex-1 overflow-hidden px-6 sm:px-10 pb-[140px] flex justify-center w-full">
-        {loading ? (
-          <ChatSkeleton />
-        ) : (
-          <ChatArea messages={messages} />
-        )}
+    <div className="flex-1 flex flex-col w-full h-full relative overflow-hidden bg-white">
+      {/* Scrollable Container */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-6 sm:px-10 pb-[140px] pt-10">
+        <div className="max-w-4xl mx-auto w-full space-y-12">
+          
+          <OnboardingChecklist />
+          
+          {loading ? (
+            <ChatSkeleton />
+          ) : (
+            <ChatArea messages={messages} />
+          )}
+        </div>
       </div>
       
       {/* Input Bar Container - Sticky Bottom */}
       {!loading && (
-        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white/90 to-transparent pt-20 px-6 sm:px-10 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="w-full pb-6">
-            <InputBar onSendMessage={handleSendMessage} />
-          </div>
+        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white/90 to-transparent pt-20 px-6 sm:px-10 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+          <InputBar onSendMessage={handleSendMessage} />
         </div>
       )}
     </div>

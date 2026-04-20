@@ -14,21 +14,20 @@ interface ChatAreaProps {
 
 export default function ChatArea({ messages }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (messages.length > 0) {
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages]);
 
   return (
     <div className="flex-1 flex flex-col h-full w-full max-w-4xl mx-auto">
-      {/* Top Header */}
-      <div className="w-full pt-8 pb-6 mb-4 flex justify-between items-end border-b border-brand-border">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Deal Intelligence</h1>
-          <p className="text-brand-secondary text-sm font-medium mt-1">AI-powered proposal analysis</p>
-        </div>
-      </div>
-
       <div className="w-full flex-1 overflow-y-auto scrollbar-hide space-y-8 pb-8">
         {messages.length === 0 ? (
           /* Welcome Section */
