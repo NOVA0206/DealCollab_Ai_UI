@@ -1,242 +1,310 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useUser } from '@/components/UserProvider';
+import React, { useState, useEffect, use } from 'react';
+import Link from 'next/link';
+import DealCard from '@/components/DealCard';
+import MatchCard from '@/components/MatchCard';
 import { useNotifications } from '@/components/NotificationProvider';
+import { DashboardSkeleton, ErrorState } from '@/components/Skeleton';
+import ConnectionDetails from '@/components/ConnectionDetails';
+import ExpiredLinkView from '@/components/ExpiredLinkView';
 import { 
-  ArrowLeft, Briefcase, Target, ShieldCheck, 
-  Lock, Zap, CheckCircle2, XCircle, Clock,
-  MessageSquare, ExternalLink, Sparkles, AlertCircle
+  ArrowLeft, 
+  ShieldAlert, 
+  ShieldCheck, 
+  Clock, 
+  XCircle, 
+  Trash2,
+  Lock,
+  MessageCircle,
+  Share2
 } from 'lucide-react';
-import StatusBadge, { DealStatus } from '@/components/StatusBadge';
 
-type EOIStatus = 'Awaiting Approval' | 'Approved' | 'Declined' | 'Expired';
-
-interface EOIDetail {
-  id: string;
-  status: EOIStatus;
-  sentAt: string;
-  matchScore: number;
-  myDeal: {
-    title: string;
-    type: string;
-    budget: string;
-  };
-  matchedDeal: {
-    title: string;
-    type: string;
-    valuation: string;
-    location: string;
-  };
+interface DashboardDeal {
+  id: number;
+  deal: string;
+  dealDesc: string;
+  match: string;
+  matchDesc: string;
+  status: "Send EOI" | "EOI Sent — Awaiting Approval" | "Approved" | "Declined" | "EOI Received";
+  isIncoming?: boolean;
 }
 
-const mockEOIs: Record<string, EOIDetail> = {
-  "1": {
-    id: "1",
-    status: "Awaiting Approval",
-    sentAt: "2 days ago",
-    matchScore: 92,
-    myDeal: {
-      title: "Series A Tech Expansion",
-      type: "Fundraising",
-      budget: "$5M - $10M"
+// Reuse mock data logic
+const getMockDeal = async (id: number): Promise<DashboardDeal | null | 'expired'> => {
+  await new Promise(resolve => setTimeout(resolve, 600));
+  if (id === 404) return 'expired';
+  
+  const data: DashboardDeal[] = [
+    { 
+        id: 101, 
+        deal: "Acquisition Strategy: Cloud Infra", 
+        dealDesc: "Enterprise client looking for private cloud infrastructure partners.",
+        match: "Sarah Jenkins (Potential Partner)", 
+        matchDesc: "Managing Director at Ventura Capital with focus on Tech infrastructure.",
+        status: "EOI Received",
+        isIncoming: true
     },
-    matchedDeal: {
-      title: "Global Growth Equity",
-      type: "Investor",
-      valuation: "$500M AUM",
-      location: "San Francisco, CA"
-    }
-  },
-  "2": {
-    id: "2",
-    status: "Approved",
-    sentAt: "1 week ago",
-    matchScore: 88,
-    myDeal: {
-      title: "SaaS Infrastructure Sell-side",
-      type: "Acquisition",
-      budget: "$15M valuation"
+    { 
+        id: 1, 
+        deal: "Startup Funding Round", 
+        dealDesc: "Series A funding looking for strategic investors in the fintech space.",
+        match: "Ventura Capital A", 
+        matchDesc: "Leading early-stage fintech investor with a focus on disruptive payment solutions.",
+        status: "Send EOI" 
     },
-    matchedDeal: {
-      title: "CloudCorp Partners",
-      type: "Strategic Buyer",
-      valuation: "Publicly Traded",
-      location: "London, UK"
+    { 
+        id: 2, 
+        deal: "Infrastructure Merger", 
+        dealDesc: "Seeking expansion partner for major regional railway project.",
+        match: "BuildCorp Infrastructure", 
+        matchDesc: "Established civil engineering firm specializing in large-scale transit networks.",
+        status: "EOI Sent — Awaiting Approval" 
+    },
+    { 
+        id: 3, 
+        deal: "SaaS Enterprise Expansion", 
+        dealDesc: "Enterprise software provider looking for European distribution channel.",
+        match: "EuroCloud Distribution", 
+        matchDesc: "Top-tier IT distributor with extensive network across DACH and BENELUX regions.",
+        status: "Approved" 
     }
-  }
+  ];
+  return data.find(d => d.id === id) || null;
 };
 
-export default function EOIDetailPage() {
-  const params = useParams();
-  const router = useRouter();
+export default function EOIDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { addNotification } = useNotifications();
-  const id = params.id as string;
   
-  const [eoi, setEoi] = useState<EOIDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [deal, setDeal] = useState<DashboardDeal | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error' | 'link_expired'>('loading');
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   useEffect(() => {
-    // Simulate fetch
-    setTimeout(() => {
-      setEoi(mockEOIs[id] || mockEOIs["1"]);
-      setLoading(false);
-    }, 600);
+    const fetchDeal = async () => {
+      try {
+        const data = await getMockDeal(parseInt(id));
+        if (data === 'expired') {
+          setStatus('link_expired');
+        } else if (data) {
+          setDeal(data);
+          setStatus('ready');
+        } else {
+          setStatus('error');
+        }
+      } catch {
+        setStatus('error');
+      }
+    };
+    fetchDeal();
   }, [id]);
 
   const handleWithdraw = () => {
-    setIsProcessing(true);
+    setIsWithdrawing(true);
     setTimeout(() => {
       addNotification({
-        type: 'error',
-        message: 'Expression of Interest withdrawn.',
+        type: 'success',
+        message: 'EOI withdrawn successfully.',
         time: 'Just now'
       });
-      setIsProcessing(false);
-      router.push('/deal-dashboard');
+      setIsWithdrawing(false);
+      // Simulate state update
+      if (deal) setDeal({ ...deal, status: 'Send EOI' });
     }, 1500);
   };
 
-  const handleConnect = () => {
-    router.push('/deal-dashboard'); // Or direct to chat
-  };
-
-  if (loading) return (
-     <div className="flex-1 p-10 max-w-6xl mx-auto w-full space-y-8 animate-pulse">
-        <div className="w-48 h-8 bg-gray-100 rounded-xl" />
-        <div className="grid grid-cols-2 gap-8">
-           <div className="h-64 bg-gray-50 rounded-[40px]" />
-           <div className="h-64 bg-gray-50 rounded-[40px]" />
-        </div>
-     </div>
+  if (status === 'loading') return (
+    <div className="flex-1 bg-white p-10">
+      <DashboardSkeleton />
+    </div>
   );
 
-  if (!eoi) return null;
+  if (status === 'link_expired') return (
+    <div className="flex-1 bg-white p-10">
+      <ExpiredLinkView />
+    </div>
+  );
+
+  if (status === 'error' || !deal) return (
+    <div className="flex-1 bg-white p-10 flex flex-col items-center justify-center">
+      <ErrorState message="Could not find this deal interaction." />
+      <Link href="/deal-dashboard" className="mt-4 text-sm font-bold text-[#F97316] flex items-center gap-2">
+        <ArrowLeft size={16} /> Back to Dashboard
+      </Link>
+    </div>
+  );
+
+  const statusType = deal.status;
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full bg-[#F9FAFB] relative overflow-y-auto">
-      
-      {/* HEADER */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-gray-100 px-6 sm:px-10 py-5 flex items-center gap-4">
-         <button 
-           onClick={() => router.push('/deal-dashboard')}
-           className="p-2 hover:bg-gray-100 rounded-xl transition-all text-gray-400 hover:text-[#1F2937]"
-         >
-           <ArrowLeft size={20} />
-         </button>
-         <h1 className="text-xl font-bold text-[#1F2937] tracking-tight">EOI Tracking</h1>
-         <div className="ml-auto flex items-center gap-2 px-3 py-1 bg-gray-50 border border-gray-100 rounded-full">
-            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Ref: EOI-{eoi.id}</span>
-         </div>
+    <div className="flex-1 flex flex-col w-full h-full relative overflow-y-auto bg-white p-6 sm:p-10">
+      {/* Header */}
+      <div className="mb-10">
+        <Link 
+          href="/deal-dashboard" 
+          className="group flex items-center gap-2 text-gray-400 hover:text-[#F97316] transition-all mb-6"
+        >
+          <div className="p-1.5 rounded-full bg-gray-50 group-hover:bg-[#F97316]/10 transition-colors">
+            <ArrowLeft size={16} />
+          </div>
+          <span className="text-xs font-bold uppercase tracking-widest">Back to Dashboard</span>
+        </Link>
+        <h1 className="text-3xl font-black text-[#1F2937] tracking-tight">EOI Engagement Detail</h1>
+        <p className="text-gray-500 text-sm font-medium mt-1">Tracking ID: DC-{deal.id}-EOI</p>
       </div>
 
-      <div className="p-6 sm:p-10 max-w-6xl mx-auto w-full space-y-10">
+      <div className="max-w-6xl w-full mx-auto space-y-10 pb-20">
         
-        {/* STATUS HUD */}
-        <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-xl flex flex-col md:flex-row items-center justify-between gap-8 animate-in fade-in slide-in-from-top-4 duration-500">
-           <div className="flex items-center gap-6">
-              <div className={`w-16 h-16 rounded-[24px] flex items-center justify-center ${
-                 eoi.status === 'Approved' ? 'bg-green-100 text-green-600' : 
-                 eoi.status === 'Declined' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'
-              }`}>
-                 {eoi.status === 'Approved' ? <CheckCircle2 size={32} /> : 
-                  eoi.status === 'Declined' ? <XCircle size={32} /> : <Clock size={32} />}
-              </div>
-              <div>
-                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#6B7280] mb-1">Interaction Status</p>
-                 <h2 className="text-2xl font-bold text-[#1F2937]">{eoi.status}</h2>
-                 <p className="text-xs text-gray-400 font-medium mt-1 uppercase tracking-wider">Sent {eoi.sentAt}</p>
-              </div>
-           </div>
+        {/* SUMMARY SECTION: Your Deal vs Partner */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 px-1">
+              <div className="w-1.5 h-1.5 bg-gray-300 rounded-full" />
+              <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Your Proposal</h2>
+            </div>
+            <div className="h-full">
+              <DealCard title={deal.deal} description={deal.dealDesc} />
+            </div>
+          </div>
 
-           <div className="flex items-center gap-3 w-full md:w-auto">
-              {eoi.status === 'Awaiting Approval' && (
-                 <button 
-                  onClick={handleWithdraw}
-                  disabled={isProcessing}
-                  className="w-full md:w-auto px-8 py-3.5 bg-white border border-gray-100 rounded-2xl text-xs font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center gap-2"
-                 >
-                    {isProcessing ? 'Processing...' : 'Withdraw EOI'}
-                 </button>
-              )}
-              {eoi.status === 'Approved' && (
-                 <button 
-                  onClick={handleConnect}
-                  className="w-full md:w-auto px-8 py-3.5 bg-[#1F2937] text-white rounded-2xl text-xs font-bold hover:bg-[#F97316] transition-all flex items-center justify-center gap-2 shadow-lg"
-                 >
-                    <MessageSquare size={16} />
-                    Enter Negotiation Chat
-                 </button>
-              )}
-           </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 px-1">
+              <div className="w-1.5 h-1.5 bg-[#F97316] rounded-full" />
+              <h2 className="text-[10px] font-black uppercase tracking-widest text-[#F97316]">Selected AI Match</h2>
+            </div>
+            <div className="h-full">
+              <MatchCard entity={deal.match} description={deal.matchDesc} />
+            </div>
+          </div>
         </div>
 
-        {/* COMPARISON SUMMARY */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 relative items-center">
-           
-           <div className="hidden lg:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full border border-gray-100 shadow-xl items-center justify-center text-[#F97316]">
-              <Zap size={20} fill="currentColor" />
-           </div>
-
-           {/* YOUR DEAL */}
-           <div className="bg-white p-8 sm:p-10 rounded-[40px] border border-gray-100 shadow-sm space-y-6 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-[40px] transition-all group-hover:bg-blue-500/10" />
-              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
-                 <Briefcase size={24} />
+        {/* STATUS SECTION */}
+        <div className="bg-gray-50/50 border border-gray-100 rounded-[32px] p-8 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+          <div className="flex-1 space-y-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <StatusIcon status={statusType} />
+                <h3 className="text-xl font-bold text-[#1F2937] capitalize">
+                  {statusType === 'EOI Sent — Awaiting Approval' ? 'Awaiting Counter-party Review' : statusType}
+                </h3>
               </div>
-              <div className="space-y-1">
-                 <h3 className="text-xl font-bold text-[#1F2937] tracking-tight">{eoi.myDeal.title}</h3>
-                 <p className="text-xs font-black text-blue-600 uppercase tracking-widest">{eoi.myDeal.type}</p>
-              </div>
-              <div className="pt-6 border-t border-gray-50 flex items-center justify-between">
-                 <span className="text-xs font-bold text-gray-400">Budget Range</span>
-                 <span className="text-sm font-black text-[#1F2937]">{eoi.myDeal.budget}</span>
-              </div>
-           </div>
-
-           {/* COUNTERPARTY */}
-           <div className="bg-[#1F2937] p-8 sm:p-10 rounded-[40px] shadow-2xl space-y-6 relative overflow-hidden text-white group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-bl-[40px]" />
-              <div className="relative z-10 space-y-6">
-                 <div className="flex justify-between items-start">
-                    <div className="w-12 h-12 bg-[#F97316] text-white rounded-2xl flex items-center justify-center shadow-lg shadow-[#F97316]/20">
-                       <Target size={24} />
-                    </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full border border-white/10">
-                       <Sparkles size={12} className="text-[#F97316]" />
-                       <span className="text-[10px] font-black uppercase tracking-widest text-[#F97316]">92% Match</span>
-                    </div>
-                 </div>
-                 <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-white tracking-tight leading-tight">{eoi.matchedDeal.title}</h3>
-                    <p className="text-xs font-black text-[#F97316] uppercase tracking-widest">{eoi.matchedDeal.type}</p>
-                 </div>
-                 <div className="pt-6 border-t border-white/10 flex items-center justify-between">
-                    <span className="text-xs font-bold text-white/40">Valuation Context</span>
-                    <span className="text-sm font-black text-white">{eoi.matchedDeal.valuation}</span>
-                 </div>
-              </div>
-           </div>
-        </div>
-
-        {/* SECURITY WARNING */}
-        <div className="bg-gray-50 p-8 rounded-[40px] border border-gray-100 flex flex-col md:flex-row items-center gap-6 justify-center">
-           <div className="w-14 h-14 bg-white rounded-2xl shadow-sm flex items-center justify-center text-gray-300">
-              <Lock size={28} />
-           </div>
-           <div className="text-center md:text-left max-w-xl">
-              <h4 className="text-sm font-black text-[#1F2937] uppercase tracking-tight mb-1">Identity Security Active</h4>
-              <p className="text-xs font-medium text-gray-400 leading-relaxed">
-                 {eoi.status === 'Approved' 
-                    ? "Identity has been shared with the counterparty. Professional collaboration is now enabled."
-                    : "The counterparty's identity and firm details will only be revealed once they review and approve this Expression of Interest."
-                 }
+              <p className="text-sm text-gray-500 font-medium leading-relaxed max-w-lg">
+                {getStatusMessage(statusType)}
               </p>
-           </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <div className="px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Interaction Started: 12h ago
+              </div>
+              <div className="px-3 py-1 bg-white border border-gray-100 rounded-full text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Last Update: 2m ago
+              </div>
+            </div>
+          </div>
+
+          <div className="flex shrink-0 gap-3">
+             {statusType === 'EOI Sent — Awaiting Approval' && (
+               <button 
+                onClick={handleWithdraw}
+                disabled={isWithdrawing}
+                className="flex items-center gap-2 bg-white text-red-500 px-6 py-3 rounded-2xl font-bold text-sm border border-red-100 hover:bg-red-50 transition-all shadow-sm disabled:opacity-50"
+               >
+                 {isWithdrawing ? (
+                   <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+                 ) : (
+                   <Trash2 size={18} />
+                 )}
+                 Withdraw EOI
+               </button>
+             )}
+
+             {statusType === 'Approved' && (
+               <div className="flex gap-3">
+                  <button className="flex items-center gap-2 bg-[#F97316] text-white px-8 py-3 rounded-2xl font-bold text-sm hover:bg-[#EA580C] transition-all shadow-lg shadow-[#F97316]/20">
+                    <MessageCircle size={18} />
+                    Open Chat
+                  </button>
+                  <button className="flex items-center gap-2 bg-white text-[#1F2937] px-6 py-3 rounded-2xl font-bold text-sm border border-gray-100 hover:bg-gray-50 transition-all shadow-sm">
+                    <Share2 size={18} />
+                  </button>
+               </div>
+             )}
+
+             {statusType === 'Declined' && (
+               <div className="text-xs font-bold text-gray-400 bg-gray-100 px-6 py-3 rounded-2xl border border-gray-200 uppercase tracking-widest">
+                 Engagement Closed
+               </div>
+             )}
+          </div>
         </div>
 
+        {/* IDENTITY SECTION: Privacy Guard */}
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 px-1">
+             <ShieldAlert size={16} className={statusType === 'Approved' ? 'text-green-500' : 'text-[#F97316]'} />
+             <h2 className="text-xs font-black uppercase tracking-widest text-[#1F2937]">Identity Disclosure</h2>
+          </div>
+
+          {statusType === 'Approved' ? (
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+               <ConnectionDetails item={deal} />
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-[40px] p-12 flex flex-col items-center text-center space-y-6 border-2 border-dashed border-gray-200">
+              <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-sm border border-gray-100 relative">
+                <Lock size={32} className="text-gray-300" />
+                <div className="absolute -top-1 -right-1 w-6 h-6 bg-[#F97316] rounded-full flex items-center justify-center ring-4 ring-gray-50">
+                   <ShieldCheck size={12} className="text-white" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-[#1F2937]">Identity Protected by Intelligence Layer</h3>
+                <p className="text-sm text-gray-500 max-w-sm mx-auto leading-relaxed">
+                  Full name, firm location, and direct contact details will be revealed once the counter-party approves your Expression of Interest.
+                </p>
+              </div>
+              <div className="flex items-center gap-4 pt-2">
+                 <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <ShieldCheck size={14} className="text-green-500" /> AI Verified
+                 </div>
+                 <div className="w-1 h-1 bg-gray-300 rounded-full" />
+                 <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <Lock size={14} className="text-gray-400" /> Privacy First
+                 </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
+}
+
+function StatusIcon({ status }: { status: string }) {
+  switch (status) {
+    case 'Approved':
+      return <ShieldCheck className="text-green-500" size={24} />;
+    case 'Declined':
+      return <XCircle className="text-red-500" size={24} />;
+    case 'EOI Sent — Awaiting Approval':
+      return <Clock className="text-[#F97316] animate-pulse" size={24} />;
+    default:
+      return <Clock className="text-gray-400" size={24} />;
+  }
+}
+
+function getStatusMessage(status: string) {
+  switch (status) {
+    case 'Approved':
+      return "The counter-party has reviewed your proposal and approved the engagement. You now have full access to their contact details and deal intel.";
+    case 'Declined':
+      return "This engagement has been declined by the counter-party. No further tokens will be spent on this interaction.";
+    case 'EOI Sent — Awaiting Approval':
+      return "Your Expression of Interest has been delivered to the counter-party's dashboard. We are currently awaiting their response.";
+    case 'EOI Received':
+      return "A counter-party has sent you an EOI for this deal. You can review their anonymized profile before approving.";
+    default:
+      return "Tracking the progress of this deal engagement through our Intelligence Layer.";
+  }
 }

@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Bell, Sparkles, Bot, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { LayoutDashboard, FileText, Bell, Sparkles, PanelLeftClose, PanelLeft } from 'lucide-react';
 import { useNotifications } from './NotificationProvider';
 
 interface SidebarProps {
@@ -20,15 +20,27 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   ];
 
   return (
-    <aside className="w-full h-full bg-brand-sidebar border-r border-brand-border flex flex-col justify-between py-6 transition-all duration-300">
+    <aside className="w-full h-full bg-brand-sidebar border-r border-brand-border flex flex-col justify-between py-6 transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] animate-in fade-in duration-700">
       {/* Top Section */}
       <div>
         {/* Logo Area */}
-        <Link href="/" className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-6'} mb-10 overflow-hidden`}>
-          <div className="w-8 h-8 rounded-lg bg-brand-accent flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover:scale-105">
-            <div className="w-2.5 h-2.5 rounded-full bg-white transition-all transform scale-100" />
+        <Link href="/home" className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-6'} mb-10 overflow-hidden`}>
+          <div className="w-8 h-8 rounded-lg bg-black flex items-center justify-center shrink-0 shadow-sm transition-transform duration-500 group-hover:scale-110 relative overflow-hidden ring-1 ring-white/10">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover scale-125 transition-transform duration-700 group-hover:scale-150"
+            >
+              <source src="/Earth.mp4" type="video/mp4" />
+            </video>
           </div>
-          {!isCollapsed && <span className="text-foreground font-bold text-sm tracking-tight whitespace-nowrap animate-in fade-in slide-in-from-left-2">DealCollab AI</span>}
+          {!isCollapsed && (
+            <span className="text-foreground font-bold text-sm tracking-tight whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-500">
+              DealCollab AI
+            </span>
+          )}
         </Link>
  
         {/* Menu Items */}
@@ -39,32 +51,32 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all w-full text-left ${
+                className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-300 w-full text-left ${
                   isActive 
-                    ? 'text-brand-accent bg-brand-accent-glow border-l-2 border-brand-accent' 
-                    : 'text-brand-secondary hover:text-foreground hover:bg-black/5'
+                    ? 'text-brand-accent bg-brand-accent-glow border-l-2 border-brand-accent shadow-sm' 
+                    : 'text-brand-secondary hover:text-foreground hover:bg-black/5 hover:translate-x-1'
                 }`}
               >
-                <item.icon size={20} className={`shrink-0 transition-transform ${isActive ? '' : 'group-hover:scale-110'}`} />
-                {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap overflow-hidden">{item.name}</span>}
+                <item.icon size={20} className={`shrink-0 transition-all duration-300 ${isActive ? '' : 'group-hover:scale-110 group-hover:text-brand-accent'}`} />
+                {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap overflow-hidden animate-in fade-in slide-in-from-left-1 duration-300">{item.name}</span>}
               </Link>
             );
           })}
  
           <Link 
             href="/notifications"
-            className={`group flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-3'} py-2.5 rounded-xl transition-all w-full text-left ${
+            className={`group flex items-center ${isCollapsed ? 'justify-center' : 'justify-between px-3'} py-2.5 rounded-xl transition-all duration-300 w-full text-left ${
               pathname === '/notifications'
-                ? 'text-brand-accent bg-brand-accent-glow border-l-2 border-brand-accent'
-                : 'text-brand-secondary hover:text-foreground hover:bg-black/5'
+                ? 'text-brand-accent bg-brand-accent-glow border-l-2 border-brand-accent shadow-sm'
+                : 'text-brand-secondary hover:text-foreground hover:bg-black/5 hover:translate-x-1'
             }`}
           >
             <div className={`flex items-center ${isCollapsed ? '' : 'gap-3'}`}>
-              <Bell size={20} className={`shrink-0 transition-transform ${pathname === '/notifications' ? '' : 'group-hover:scale-110'}`} />
-              {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap overflow-hidden">Notifications</span>}
+              <Bell size={20} className={`shrink-0 transition-all duration-300 ${pathname === '/notifications' ? '' : 'group-hover:scale-110 group-hover:text-brand-accent'}`} />
+              {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap overflow-hidden animate-in fade-in slide-in-from-left-1 duration-300">Notifications</span>}
             </div>
             {!isCollapsed && unreadCount > 0 && (
-              <span className="bg-brand-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-in fade-in zoom-in duration-300">
+              <span className="bg-brand-accent text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-in fade-in zoom-in duration-500">
                 {unreadCount}
               </span>
             )}
@@ -72,14 +84,14 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
 
           <Link 
             href="/deal-intelligence"
-            className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all w-full text-left ${
+            className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl transition-all duration-300 w-full text-left ${
               pathname === '/deal-intelligence' 
-                ? 'text-brand-accent bg-brand-accent-glow border-l-2 border-brand-accent' 
-                : 'text-brand-secondary hover:text-foreground hover:bg-black/5'
+                ? 'text-brand-accent bg-brand-accent-glow border-l-2 border-brand-accent shadow-sm' 
+                : 'text-brand-secondary hover:text-foreground hover:bg-black/5 hover:translate-x-1'
             }`}
           >
-            <Sparkles size={20} className={`shrink-0 transition-transform ${pathname === '/deal-intelligence' ? '' : 'group-hover:scale-110'}`} />
-            {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap overflow-hidden">Deal Intelligence</span>}
+            <Sparkles size={20} className={`shrink-0 transition-all duration-300 ${pathname === '/deal-intelligence' ? '' : 'group-hover:scale-110 group-hover:text-brand-accent'}`} />
+            {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap overflow-hidden animate-in fade-in slide-in-from-left-1 duration-300">Deal Intelligence</span>}
           </Link>
         </nav>
       </div>
@@ -88,7 +100,7 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       <div className="px-3">
           <button 
             onClick={onToggle}
-            className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl text-brand-secondary hover:text-foreground hover:bg-black/5 transition-all w-full text-left`}
+            className={`group flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-3'} py-2.5 rounded-xl text-brand-secondary hover:text-foreground hover:bg-black/5 transition-all duration-300 w-full text-left active:scale-[0.98]`}
           >
             {isCollapsed ? <PanelLeft size={20} /> : <PanelLeftClose size={20} />}
             {!isCollapsed && <span className="text-sm font-bold whitespace-nowrap">Collapse</span>}

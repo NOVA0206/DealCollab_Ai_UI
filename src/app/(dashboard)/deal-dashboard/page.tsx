@@ -5,7 +5,7 @@ import DashboardRow, { DashboardDeal } from '@/components/DashboardRow';
 import { DashboardSkeleton, EmptyState, ErrorState } from '@/components/Skeleton';
 import SendEOIModal from '@/components/SendEOIModal';
 import { useNotifications } from '@/components/NotificationProvider';
-import { LayoutGrid, PlusCircle, RefreshCw, Radio } from 'lucide-react';
+import { LayoutGrid, PlusCircle } from 'lucide-react';
 
 // Mock API simulation with expanded data
 const fetchDashboardData = async (): Promise<DashboardDeal[]> => {
@@ -17,7 +17,7 @@ const fetchDashboardData = async (): Promise<DashboardDeal[]> => {
         dealDesc: "Enterprise client looking for private cloud infrastructure partners.",
         match: "Sarah Jenkins (Potential Partner)", 
         matchDesc: "Managing Director at Ventura Capital with focus on Tech infrastructure.",
-        status: "EOI Received" as any,
+        status: "EOI Received",
         isIncoming: true
     },
     { 
@@ -58,7 +58,7 @@ export default function DealDashboardPage() {
     deal: null
   });
 
-  const getData = async (isBackground = false) => {
+  const getData = React.useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     else setRefreshing(true);
     
@@ -73,35 +73,40 @@ export default function DealDashboardPage() {
           time: 'Just now'
         });
       }
-    } catch (err) {
+    } catch {
       if (!isBackground) setError(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [addNotification]);
 
   useEffect(() => {
-    getData();
+    const initTimer = setTimeout(() => {
+      getData();
+    }, 0);
     
     // Auto-refresh every 30 seconds
     const interval = setInterval(() => {
       getData(true);
     }, 30000);
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(interval);
+    };
+  }, [getData]);
 
   const handleEOIRequest = (item: DashboardDeal) => {
     setEoiModal({ isOpen: true, deal: item });
   };
 
-  const handleEOISuccess = (formData: any) => {
+  const handleEOISuccess = (formData: Record<string, unknown>) => {
     console.log("EOI Sent:", formData);
   };
 
-  const incomingEOIs = data.filter(item => (item as any).isIncoming);
-  const myProposals = data.filter(item => !(item as any).isIncoming);
+  const incomingEOIs = data.filter(item => item.isIncoming);
+  const myProposals = data.filter(item => !item.isIncoming);
 
   return (
     <div className="flex-1 flex flex-col w-full h-full relative overflow-y-auto bg-white p-6 sm:p-10">

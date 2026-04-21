@@ -1,12 +1,12 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { User, Coins, CreditCard, LogOut } from 'lucide-react';
+import { User, Coins, CreditCard, LogOut, LifeBuoy } from 'lucide-react';
 import { useUser } from './UserProvider';
 
 import Link from 'next/link';
 
 export default function ProfileDropdown() {
-  const { tokens } = useUser();
+  const { tokens, logout } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -33,43 +33,70 @@ export default function ProfileDropdown() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-brand-border shadow-lg p-2 animate-in fade-in slide-in-from-top-4 duration-200 z-50">
-          <div className="px-3 py-2 mb-2 border-b border-brand-border">
+        <div className="absolute right-0 mt-3 w-64 rounded-[24px] bg-white border border-brand-border shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-2 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] z-50 origin-top-right">
+          <div className="px-5 py-4 mb-2 border-b border-gray-50">
             <div className="flex justify-between items-center mb-1">
-              <p className="text-sm font-semibold text-foreground">Alex Morgan</p>
-              <div className="flex items-center gap-1 px-1.5 py-0.5 bg-[#F97316]/10 rounded-md">
-                <Coins size={10} className="text-[#F97316]" />
-                <span className="text-[10px] font-bold text-[#F97316]">{tokens}</span>
+              <p className="text-sm font-black text-[#1F2937] tracking-tight">Alex Morgan</p>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#F97316]/10 rounded-full border border-[#F97316]/10">
+                <Coins size={12} className="text-[#F97316]" />
+                <span className="text-[10px] font-black text-[#F97316]">{tokens}</span>
               </div>
             </div>
-            <p className="text-xs text-brand-secondary">alex@dealcollab.ai</p>
+            <p className="text-[11px] text-gray-400 font-bold tracking-wide">alex@dealcollab.ai</p>
           </div>
           
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-0.5">
             <Link 
               href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-brand-secondary hover:text-foreground hover:bg-black/5 transition-all text-sm w-full text-left active:scale-[0.98]"
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-[#1F2937] hover:bg-gray-50 transition-all duration-200 text-sm w-full text-left active:scale-[0.97] group"
             >
-              <User size={16} />
-              <span>Profile Settings</span>
+              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
+                <User size={16} className="group-hover:text-[#F97316] transition-colors" />
+              </div>
+              <span className="font-bold">Profile Settings</span>
             </Link>
-            <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-brand-secondary hover:text-foreground hover:bg-black/5 transition-all text-sm w-full text-left active:scale-[0.98]">
-              <Coins size={16} />
-              <span>Token Usage</span>
-            </button>
+            <Link 
+              href="/profile/tokens"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-[#1F2937] hover:bg-gray-50 transition-all duration-200 text-sm w-full text-left active:scale-[0.97] group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
+                <Coins size={16} className="group-hover:text-[#F97316] transition-colors" />
+              </div>
+              <span className="font-bold">Token Usage</span>
+            </Link>
             <Link 
               href="/profile/billing"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-brand-secondary hover:text-foreground hover:bg-black/5 transition-all text-sm w-full text-left active:scale-[0.98]"
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-[#1F2937] hover:bg-gray-50 transition-all duration-200 text-sm w-full text-left active:scale-[0.97] group"
             >
-              <CreditCard size={16} />
-              <span>Billing</span>
+              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
+                <CreditCard size={16} className="group-hover:text-[#F97316] transition-colors" />
+              </div>
+              <span className="font-bold">Billing</span>
             </Link>
-            <div className="my-1 border-t border-brand-border" />
-            <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-all text-sm w-full text-left active:scale-[0.98]">
-              <LogOut size={16} />
-              <span>Logout</span>
+            <a 
+              href="mailto:support@dealcollab.in"
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:text-[#1F2937] hover:bg-gray-50 transition-all duration-200 text-sm w-full text-left active:scale-[0.97] group"
+              title="Need help? Contact our support team"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
+                <LifeBuoy size={16} className="group-hover:text-[#F97316] transition-colors" />
+              </div>
+              <span className="font-bold">Help & Support</span>
+            </a>
+            
+            <div className="my-2 border-t border-gray-50 mx-2" />
+            
+            <button 
+              onClick={() => logout()}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all duration-200 text-sm w-full text-left active:scale-[0.97] group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-red-50/50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">
+                <LogOut size={16} className="group-hover:text-red-600 transition-colors" />
+              </div>
+              <span className="font-bold">Logout</span>
             </button>
           </div>
         </div>

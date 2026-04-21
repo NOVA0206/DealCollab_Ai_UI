@@ -1,51 +1,16 @@
-'use client';
-import React, { useState } from 'react';
-import { CheckCircle2, Circle, ChevronRight, Lock, User as UserIcon, Send, Smartphone } from 'lucide-react';
+import React from 'react';
+import { CheckCircle2, Circle, ChevronRight, User as UserIcon, Smartphone } from 'lucide-react';
 import { useUser } from './UserProvider';
 import Link from 'next/link';
 
 export default function OnboardingChecklist() {
-  const { onboarding, setOnboarding, totalScore } = useUser();
-  const [isExplicitlyExpanded, setIsExplicitlyExpanded] = useState(false);
+  const { onboarding, totalScore } = useUser();
 
-  const { phoneVerified, dealSubmitted } = onboarding;
+  const { phoneVerified } = onboarding;
   const profileCompleted = totalScore === 100;
 
-  // Don't show if all steps are complete
-  if (dealSubmitted && profileCompleted) return null;
-
-  const handleScrollToChat = () => {
-    const inputArea = document.getElementById('chat-input-area');
-    if (inputArea) {
-      inputArea.scrollIntoView({ behavior: 'smooth' });
-      const input = inputArea.querySelector('input');
-      if (input) input.focus();
-    }
-  };
-
-  // If Step 2 is complete, default to collapsed unless expanded by user
-  const shouldShowCollapsed = profileCompleted && !isExplicitlyExpanded && !dealSubmitted;
-
-  if (shouldShowCollapsed) {
-    return (
-      <div className="w-full max-w-4xl mx-auto mb-8 animate-in fade-in slide-in-from-top-2 duration-300">
-        <button 
-          onClick={() => setIsExplicitlyExpanded(true)}
-          className="w-full bg-white border border-[#E5E7EB] rounded-2xl p-4 flex items-center justify-between hover:border-[#F97316]/50 transition-all shadow-sm group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="bg-green-100 text-green-600 p-1.5 rounded-lg">
-              <CheckCircle2 size={16} />
-            </div>
-            <span className="text-sm font-bold text-[#1F2937]">Onboarding Progress: 2/3 Steps Complete</span>
-          </div>
-          <div className="flex items-center gap-2 text-xs font-bold text-[#F97316] group-hover:translate-x-1 transition-transform">
-            View Details <ChevronRight size={14} />
-          </div>
-        </button>
-      </div>
-    );
-  }
+  // Don't show if both steps are complete
+  if (phoneVerified && profileCompleted) return null;
 
   const steps = [
     {
@@ -74,26 +39,6 @@ export default function OnboardingChecklist() {
           Profile Ready <CheckCircle2 size={12} />
         </div>
       )
-    },
-    {
-      id: 3,
-      title: 'Submit Deal',
-      completed: dealSubmitted,
-      icon: <Send size={18} />,
-      active: profileCompleted && !dealSubmitted,
-      locked: !profileCompleted,
-      action: profileCompleted ? (
-        <button 
-          onClick={handleScrollToChat}
-          className="text-xs font-bold text-[#F97316] hover:underline flex items-center gap-1"
-        >
-          Scroll to Chat <ChevronRight size={12} />
-        </button>
-      ) : (
-        <div className="flex items-center gap-1 text-xs text-gray-400 font-medium cursor-not-allowed">
-          <Lock size={10} /> Locked
-        </div>
-      )
     }
   ];
 
@@ -107,43 +52,45 @@ export default function OnboardingChecklist() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-          {steps.map((step, idx) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+          {steps.map((step, index) => (
             <div 
               key={step.id} 
-              className={`flex flex-col gap-3 p-4 rounded-xl border transition-all duration-300 ${
+              style={{ animationDelay: `${index * 150}ms` }}
+              className={`flex flex-col gap-3 p-5 rounded-[22px] border transition-all duration-500 animate-in fade-in slide-in-from-bottom-4 fill-mode-both ${
                 step.completed 
-                  ? 'bg-green-50 border-green-100 opacity-60' 
+                  ? 'bg-green-50/50 border-green-100/50 opacity-80' 
                   : step.active 
-                    ? 'bg-[#F97316]/5 border-[#F97316]/20 shadow-sm ring-1 ring-[#F97316]/10' 
-                    : 'bg-gray-50 border-gray-100 opacity-40'
+                    ? 'bg-[#F97316]/5 border-[#F97316]/20 shadow-md ring-1 ring-[#F97316]/10 scale-[1.02]' 
+                    : 'bg-gray-50/50 border-gray-100 opacity-40'
               }`}
             >
               <div className="flex justify-between items-start">
-                <div className={`p-2 rounded-lg ${step.completed ? 'bg-green-100 text-green-600' : 'bg-[#F97316]/10 text-[#F97316]'}`}>
+                <div className={`p-2.5 rounded-xl transition-colors duration-500 ${step.completed ? 'bg-green-100 text-green-600' : 'bg-[#F97316]/10 text-[#F97316]'}`}>
                   {step.icon}
                 </div>
-                {step.completed ? (
-                  <CheckCircle2 size={20} className="text-green-500" />
-                ) : (
-                  <Circle size={20} className="text-[#E5E7EB]" />
-                )}
+                <div className="transition-all duration-500">
+                  {step.completed ? (
+                    <CheckCircle2 size={22} className="text-green-500 animate-in zoom-in duration-500" />
+                  ) : (
+                    <Circle size={22} className="text-[#E5E7EB]" />
+                  )}
+                </div>
               </div>
               
-              <div>
-                <p className={`text-sm font-bold ${step.completed ? 'text-green-800' : 'text-[#1F2937]'}`}>
+              <div className="space-y-1">
+                <p className={`text-sm font-black tracking-tight ${step.completed ? 'text-green-800' : 'text-[#1F2937]'}`}>
                   {step.title}
                 </p>
-                <div className="mt-2 min-h-[20px]">
+                <div className="min-h-[20px] transition-all duration-300">
                   {step.action}
                 </div>
               </div>
             </div>
           ))}
 
-          {/* Connections between steps (Desktop only) */}
-          <div className="hidden md:block absolute top-[28px] left-[calc(33%+12px)] w-[calc(33%-24px)] h-[2px] bg-gray-100 -z-10" />
-          <div className="hidden md:block absolute top-[28px] left-[calc(66%+12px)] w-[calc(33%-24px)] h-[2px] bg-gray-100 -z-10" />
+          {/* Connection between steps (Desktop only) */}
+          <div className="hidden md:block absolute top-[30px] left-[calc(50%-24px)] w-[48px] h-[2px] bg-gray-100 -z-10 animate-in fade-in duration-1000 delay-500" />
         </div>
       </div>
     </div>

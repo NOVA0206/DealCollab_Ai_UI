@@ -3,28 +3,32 @@ import React from 'react';
 
 export default function IntelligenceStrip() {
   const signals = [
-    { label: 'Market Intelligence Confidence', value: '92.4%' },
-    { label: 'Active Deal Signals', value: '12,842' },
-    { label: 'Emerging Opportunities', value: '248' },
-    { label: 'Buyer Intent Surges', value: '41' },
+    "Deal Flow Signals Active",
+    "Buyer Intent Rising",
+    "Network Activity Increasing",
+    "Private Equity Dry Powder +12%",
+    "Cross-Border Interest Surging"
   ];
 
   return (
-    <section className="w-full bg-[#0B1220] border-y border-white/5 py-10 px-6 sm:px-10 relative z-20">
-      <div className="max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-10 sm:gap-4 divide-x-0 lg:divide-x divide-white/5">
-          {signals.map((signal, idx) => (
-             <div key={idx} className="flex flex-col items-center lg:items-start lg:pl-12 first:pl-0 group animate-in fade-in slide-in-from-bottom-2 duration-1000" style={{ animationDelay: `${idx * 150}ms` }}>
-                <p className="text-[9px] font-black uppercase tracking-[0.3em] text-[#6B7280] mb-2 group-hover:text-[#C9A74D] transition-colors duration-500">
-                   {signal.label}
-                </p>
-                <p className="text-3xl font-bold text-[#F9FAFB] tracking-tight group-hover:translate-x-1 transition-transform duration-500">
-                   {signal.value}
-                </p>
-             </div>
+    <div className="relative z-30 w-full overflow-hidden py-8 border-y border-white/5 bg-white/[0.02] backdrop-blur-sm">
+      <div className="max-w-6xl mx-auto px-8">
+        <div className="flex flex-wrap md:flex-nowrap items-center justify-center gap-x-12 gap-y-4">
+          {signals.map((signal, index) => (
+            <React.Fragment key={index}>
+              <div className="flex items-center gap-3">
+                <span className="w-1 h-1 bg-white/20 rounded-full shrink-0" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 whitespace-nowrap">
+                  {signal}
+                </span>
+              </div>
+              {index < signals.length - 1 && (
+                <div className="hidden md:block h-4 w-[1px] bg-white/5" />
+              )}
+            </React.Fragment>
           ))}
         </div>
       </div>
-    </section>
+    </div>
   );
 }

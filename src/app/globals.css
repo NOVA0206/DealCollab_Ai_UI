@@ -15,6 +15,11 @@
   --color-brand-accent-glow: rgba(249,115,22,0.1);
   --color-brand-accent-hover: #EA580C;
   --color-brand-border: #E5E7EB;
+
+  @keyframes zoom-slow {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.1); }
+  }
 }
 
 body {

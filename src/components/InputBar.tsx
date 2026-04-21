@@ -8,18 +8,11 @@ interface InputBarProps {
 }
 
 export default function InputBar({ onSendMessage }: InputBarProps) {
-  const { onboarding, setOnboarding, totalScore } = useUser();
+  const { setOnboarding, totalScore } = useUser();
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
   const isDisabled = totalScore < 100;
-
-  const suggestionChips = [
-    "Analyze venture capital deal",
-    "Identify SLA risks",
-    "Review pricing terms",
-    "Compare with industry benchmarks"
-  ];
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -38,38 +31,21 @@ export default function InputBar({ onSendMessage }: InputBarProps) {
 
   return (
     <div className="w-full max-w-4xl mx-auto pb-8 pt-4">
-      {/* Suggestion Chips */}
-      <div className="flex flex-wrap gap-2 mb-4 justify-center animate-in fade-in slide-in-from-bottom-2 duration-700">
-        {suggestionChips.map((chip, i) => (
-          <button
-            key={i}
-            onClick={() => !isDisabled && setInputValue(chip)}
-            className={`px-3 py-1.5 rounded-full text-[11px] font-bold border transition-all ${
-              isDisabled 
-                ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed'
-                : 'bg-white border-gray-200 text-gray-500 hover:border-[#F97316] hover:text-[#F97316] shadow-sm'
-            }`}
-          >
-            {chip}
-          </button>
-        ))}
-      </div>
-
       <form 
         id="chat-input-area"
         onSubmit={handleSubmit}
-        className={`relative flex items-center bg-white border rounded-xl p-2 transition-all duration-300 ${
+        className={`relative flex items-center bg-white border rounded-2xl p-2 transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
           isDisabled
             ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed'
             : isFocused 
-              ? 'border-[#F97316] shadow-md ring-1 ring-[#F97316]/20' 
+              ? 'border-[#F97316] shadow-[0_4px_20px_rgba(249,115,22,0.1)] ring-1 ring-[#F97316]/20' 
               : 'border-brand-border shadow-sm'
         }`}
       >
         <button 
           type="button"
           disabled={isDisabled}
-          className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-brand-secondary hover:text-foreground hover:bg-gray-100 transition-colors disabled:cursor-not-allowed"
+          className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-brand-secondary hover:text-foreground hover:bg-gray-50 transition-all duration-200 disabled:cursor-not-allowed active:scale-90"
         >
           <Plus size={20} />
         </button>
@@ -81,7 +57,7 @@ export default function InputBar({ onSendMessage }: InputBarProps) {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={isDisabled ? `Complete your profile (Currently ${totalScore}%) to unlock chat` : "Submit / Describe your Proposal"} 
-          className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-brand-secondary px-4 text-[15px] disabled:cursor-not-allowed"
+          className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-brand-secondary px-4 text-[15px] disabled:cursor-not-allowed transition-all duration-300"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />
@@ -89,11 +65,13 @@ export default function InputBar({ onSendMessage }: InputBarProps) {
         <button 
           type="submit"
           disabled={isDisabled || !inputValue.trim()}
-          className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center text-white transition-all active:scale-95 shadow-sm disabled:bg-gray-300 disabled:cursor-not-allowed ${
-            isDisabled ? 'bg-gray-300' : 'bg-[#F97316] hover:bg-[#EA580C]'
+          className={`flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all duration-300 active:scale-90 shadow-sm disabled:bg-gray-200 disabled:cursor-not-allowed ${
+            isDisabled ? 'bg-gray-200' : 'bg-[#F97316] hover:bg-[#EA580C] hover:shadow-lg hover:shadow-[#F97316]/20'
           }`}
         >
-          {isDisabled ? <Lock size={16} /> : <ArrowUp size={18} />}
+          <div className="transition-transform duration-300">
+            {isDisabled ? <Lock size={16} /> : <ArrowUp size={18} className="animate-in fade-in zoom-in duration-300" />}
+          </div>
         </button>
       </form>
 

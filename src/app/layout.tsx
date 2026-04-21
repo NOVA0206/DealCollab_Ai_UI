@@ -17,7 +17,8 @@ export const metadata: Metadata = {
   description: "AI-powered proposal analysis",
 };
 
-import DashboardLayout from "@/components/DashboardLayout";
+import { NotificationProvider } from '@/components/NotificationProvider';
+import { UserProvider } from '@/components/UserProvider';
 
 export default function RootLayout({
   children,
@@ -30,9 +31,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="h-full w-full m-0 p-0 overflow-hidden bg-white">
-        <DashboardLayout>
-          {children}
-        </DashboardLayout>
+        <NotificationProvider>
+          <UserProvider>
+            {children}
+          </UserProvider>
+        </NotificationProvider>
       </body>
     </html>
   );
