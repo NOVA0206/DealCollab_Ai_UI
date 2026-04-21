@@ -1,11 +1,11 @@
 'use client';
 import React, { useState } from 'react';
-import Sidebar from './Sidebar';
-import ProfileDropdown from './ProfileDropdown';
-import BottomNav from './BottomNav';
+import Sidebar from '@/components/Sidebar';
+import ProfileDropdown from '@/components/ProfileDropdown';
+import BottomNav from '@/components/BottomNav';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { useUser } from './UserProvider';
+import { useUser } from '@/components/UserProvider';
 import { Coins } from 'lucide-react';
 import Link from 'next/link';
 

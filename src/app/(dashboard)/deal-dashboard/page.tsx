@@ -101,8 +101,8 @@ export default function DealDashboardPage() {
     setEoiModal({ isOpen: true, deal: item });
   };
 
-  const handleEOISuccess = (formData: Record<string, unknown>) => {
-    console.log("EOI Sent:", formData);
+  const handleEOISuccess = () => {
+    // Logic for successful EOI
   };
 
   const incomingEOIs = data.filter(item => item.isIncoming);

@@ -64,11 +64,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
       const isPhoneVerified = localStorage.getItem('phoneVerified') === 'true';
       
-      if (isLoggedIn) setIsAuthenticated(true);
-      if (isPhoneVerified) {
-        setOnboardingState(prev => ({ ...prev, phoneVerified: true }));
-        setReadinessScore(prev => ({ ...prev, phone: 25 }));
-      }
+      queueMicrotask(() => {
+        if (isLoggedIn) setIsAuthenticated(true);
+        if (isPhoneVerified) {
+          setOnboardingState(prev => ({ ...prev, phoneVerified: true }));
+          setReadinessScore(prev => ({ ...prev, phone: 25 }));
+        }
+      });
     }
   }, []);
 
@@ -91,7 +93,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // If manual logout, show notification
       if (!reason) {
         addNotification({
-          type: 'default',
+          type: 'success',
           message: 'Logged out successfully',
           time: 'Just now'
         });

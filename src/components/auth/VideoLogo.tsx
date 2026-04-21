@@ -13,7 +13,7 @@ export default function VideoLogo() {
           playsInline
           className="w-full h-full object-cover scale-110"
         >
-          <source src="/Earth.mp4" type="video/mp4" />
+          <source src="/earth.mp4" type="video/mp4" />
         </video>
         
         {/* Subtle Inner Glow */}

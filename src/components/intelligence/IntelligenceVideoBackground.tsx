@@ -15,7 +15,7 @@ export default function IntelligenceVideoBackground() {
         playsInline
         className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[2px] transition-transform duration-[20s] animate-[zoom-slow_20s_infinite_alternate]"
       >
-        <source src="/Earth.mp4" type="video/mp4" />
+        <source src="/earth.mp4" type="video/mp4" />
       </video>
       
       {/* Gradients to add even more depth */}

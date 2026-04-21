@@ -9,7 +9,6 @@ import { Sparkles } from 'lucide-react';
 export default function SignupPage() {
   const handleSignup = () => {
     // Simulator
-    console.log('Signup initiated');
   };
 
   return (

@@ -33,7 +33,7 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               playsInline
               className="w-full h-full object-cover scale-125 transition-transform duration-700 group-hover:scale-150"
             >
-              <source src="/Earth.mp4" type="video/mp4" />
+              <source src="/earth.mp4" type="video/mp4" />
             </video>
           </div>
           {!isCollapsed && (

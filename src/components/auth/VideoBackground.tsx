@@ -12,7 +12,7 @@ export default function VideoBackground() {
         playsInline
         className="fixed inset-0 w-full h-full object-cover opacity-100 scale-100 animate-[zoom-slow_30s_infinite_alternate]"
       >
-        <source src="/Earth.mp4" type="video/mp4" />
+        <source src="/earth.mp4" type="video/mp4" />
       </video>
 
       {/* Premium Visual Overlays */}

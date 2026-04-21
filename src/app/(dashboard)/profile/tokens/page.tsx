@@ -17,7 +17,7 @@ export default function TokenUsagePage() {
   const { tokens } = useUser();
 
   // Mock transaction data based on PRD requirements
-  const transactions: Transaction[] = [
+  const transactions: Transaction[] = ([
     {
       id: 'tx_1',
       date: '20 Apr 2026, 14:30',
@@ -58,7 +58,7 @@ export default function TokenUsagePage() {
        amount: 150,
        balance: 150,
     }
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  ] as Transaction[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="flex-1 w-full bg-[#F9FAFB] overflow-y-auto min-h-screen">
