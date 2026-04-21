@@ -10,10 +10,10 @@ export default function VideoBackground() {
         loop
         muted
         playsInline
+        src="/earth.mp4"
+        poster="/earth-poster.png"
         className="fixed inset-0 w-full h-full object-cover opacity-100 scale-100 animate-[zoom-slow_30s_infinite_alternate]"
-      >
-        <source src="/earth.mp4" type="video/mp4" />
-      </video>
+      />
 
       {/* Premium Visual Overlays */}
       <div className="fixed inset-0 bg-black/70 z-10 pointer-events-none" />

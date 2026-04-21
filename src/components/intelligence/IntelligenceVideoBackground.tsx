@@ -13,10 +13,10 @@ export default function IntelligenceVideoBackground() {
         loop
         muted
         playsInline
+        src="/earth.mp4"
+        poster="/earth-poster.png"
         className="absolute inset-0 w-full h-full object-cover opacity-20 blur-[2px] transition-transform duration-[20s] animate-[zoom-slow_20s_infinite_alternate]"
-      >
-        <source src="/earth.mp4" type="video/mp4" />
-      </video>
+      />
       
       {/* Gradients to add even more depth */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0B0F1A]/50 to-[#0B0F1A] z-20" />

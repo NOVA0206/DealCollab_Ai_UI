@@ -31,10 +31,9 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
               loop
               muted
               playsInline
+              src="/earth.mp4"
               className="w-full h-full object-cover scale-125 transition-transform duration-700 group-hover:scale-150"
-            >
-              <source src="/earth.mp4" type="video/mp4" />
-            </video>
+            />
           </div>
           {!isCollapsed && (
             <span className="text-foreground font-bold text-sm tracking-tight whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-500">

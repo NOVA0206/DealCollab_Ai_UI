@@ -11,10 +11,9 @@ export default function VideoLogo() {
           loop
           muted
           playsInline
+          src="/earth.mp4"
           className="w-full h-full object-cover scale-110"
-        >
-          <source src="/earth.mp4" type="video/mp4" />
-        </video>
+        />
         
         {/* Subtle Inner Glow */}
         <div className="absolute inset-0 rounded-[inherit] ring-1 ring-inset ring-white/20 pointer-events-none" />
