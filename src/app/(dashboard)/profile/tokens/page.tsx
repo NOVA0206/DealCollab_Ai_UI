@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useUser } from '@/components/UserProvider';
-import { CreditCard, ArrowUpRight, ArrowDownRight, History } from 'lucide-react';
+import { CreditCard, ArrowUpRight, History } from 'lucide-react';
 
 type TransactionType = 'credit' | 'debit' | 'purchase';
 
@@ -18,13 +18,8 @@ interface Transaction {
 export default function TokenUsagePage() {
   const { tokens } = useUser();
 
-<<<<<<< HEAD
-  // Mock transaction data based on PRD requirements
-  const transactions: Transaction[] = ([
-=======
   // ✅ Explicitly typed data (NO inference issues)
   const transactions: Transaction[] = [
->>>>>>> fa990369a61f5123fc582aaa6eb818cd5511b16b
     {
       id: 'tx_1',
       date: '2026-04-20T14:30:00',
@@ -65,16 +60,12 @@ export default function TokenUsagePage() {
       amount: 150,
       balance: 150,
     }
-<<<<<<< HEAD
-  ] as Transaction[]).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-=======
   ];
 
   // ✅ Sort AFTER typing (no inference break)
   const sortedTransactions = transactions.sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
->>>>>>> fa990369a61f5123fc582aaa6eb818cd5511b16b
 
   return (
     <div className="flex-1 w-full bg-[#F9FAFB] min-h-screen">
