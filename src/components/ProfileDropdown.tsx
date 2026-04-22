@@ -2,12 +2,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User, Coins, CreditCard, LogOut, LifeBuoy } from 'lucide-react';
 import { useUser } from './UserProvider';
-import { useSession, signOut } from "next-auth/react";
+
 import Link from 'next/link';
 
 export default function ProfileDropdown() {
-  const { data: session } = useSession();
-  const { tokens } = useUser();
+  const { tokens, logout } = useUser();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -37,13 +36,13 @@ export default function ProfileDropdown() {
         <div className="absolute right-0 mt-3 w-64 rounded-[24px] bg-white border border-brand-border shadow-[0_20px_50px_rgba(0,0,0,0.1)] p-2 animate-in fade-in zoom-in-95 slide-in-from-top-4 duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] z-50 origin-top-right">
           <div className="px-5 py-4 mb-2 border-b border-gray-50">
             <div className="flex justify-between items-center mb-1">
-              <p className="text-sm font-black text-[#1F2937] tracking-tight">{session?.user?.name || 'User'}</p>
+              <p className="text-sm font-black text-[#1F2937] tracking-tight">Alex Morgan</p>
               <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[#F97316]/10 rounded-full border border-[#F97316]/10">
                 <Coins size={12} className="text-[#F97316]" />
                 <span className="text-[10px] font-black text-[#F97316]">{tokens}</span>
               </div>
             </div>
-            <p className="text-[11px] text-gray-400 font-bold tracking-wide">{session?.user?.email || ''}</p>
+            <p className="text-[11px] text-gray-400 font-bold tracking-wide">alex@dealcollab.ai</p>
           </div>
           
           <div className="flex flex-col gap-0.5">
@@ -91,7 +90,7 @@ export default function ProfileDropdown() {
             <div className="my-2 border-t border-gray-50 mx-2" />
             
             <button 
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => logout()}
               className="flex items-center gap-3 px-4 py-3 rounded-2xl text-red-500 hover:bg-red-50 transition-all duration-200 text-sm w-full text-left active:scale-[0.97] group"
             >
               <div className="w-8 h-8 rounded-lg bg-red-50/50 flex items-center justify-center group-hover:bg-white group-hover:shadow-sm transition-all">

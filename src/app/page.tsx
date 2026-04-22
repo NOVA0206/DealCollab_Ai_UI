@@ -1,6 +1,5 @@
 'use client';
 import React, { useState, Suspense } from 'react';
-import { signIn } from "next-auth/react";
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@/components/UserProvider';
 import VideoBackground from '@/components/auth/VideoBackground';
@@ -21,9 +20,18 @@ function AuthContent() {
   const [step, setStep] = useState<'google' | 'phone' | 'verified'>('google');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleGoogleSuccess = async () => {
+  const handleGoogleSuccess = () => {
     setIsLoading(true);
-    await signIn("google", { callbackUrl: "/home" });
+    
+    // Fast simulated check
+    setTimeout(() => {
+      setIsLoading(false);
+      if (isFromWhatsApp) {
+        handleFinalAuth();
+      } else {
+        setStep('phone');
+      }
+    }, 1200);
   };
 
   const handlePhoneSuccess = () => {
