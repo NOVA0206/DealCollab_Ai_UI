@@ -1,71 +1,44 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/components/UserProvider';
-import { CreditCard, ArrowUpRight, History } from 'lucide-react';
-
-type TransactionType = 'credit' | 'debit' | 'purchase';
+import { CreditCard, ArrowUpRight, History, Loader2 } from 'lucide-react';
 
 interface Transaction {
   id: string;
-  date: string;
-  type: TransactionType;
-  description: string;
+  createdAt: string;
+  type: string;
+  action: string;
   amount: number;
-  balance: number;
+  balanceAfter: number;
 }
 
 export default function TokenUsagePage() {
-  const { tokens } = useUser();
+  const [balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Explicitly typed data (NO inference issues)
-  const transactions: Transaction[] = [
-    {
-      id: 'tx_1',
-      date: '2026-04-20T14:30:00',
-      type: 'debit',
-      description: 'Connection with Pharma Deal',
-      amount: -50,
-      balance: tokens,
-    },
-    {
-      id: 'tx_2',
-      date: '2026-04-18T09:15:00',
-      type: 'purchase',
-      description: 'Standard Token Pack',
-      amount: 100,
-      balance: tokens + 50,
-    },
-    {
-      id: 'tx_3',
-      date: '2026-04-15T11:20:00',
-      type: 'credit',
-      description: 'Profile Completed',
-      amount: 100,
-      balance: tokens - 50,
-    },
-    {
-      id: 'tx_4',
-      date: '2026-04-15T10:05:00',
-      type: 'credit',
-      description: 'Welcome Bonus',
-      amount: 100,
-      balance: tokens - 150,
-    },
-    {
-      id: 'tx_5',
-      date: '2026-04-15T10:00:00',
-      type: 'credit',
-      description: 'Account Created',
-      amount: 150,
-      balance: 150,
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/profile/tokens');
+      if (res.ok) {
+        const data = await res.json();
+        setBalance(data.balance);
+        setTransactions(data.transactions);
+      }
+    } catch (error) {
+      console.error('Failed to fetch token ledger:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, []);
 
-  // ✅ Sort AFTER typing (no inference break)
-  const sortedTransactions = transactions.sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [fetchData]);
 
   return (
     <div className="flex-1 w-full bg-[#F9FAFB] min-h-screen">
@@ -80,65 +53,108 @@ export default function TokenUsagePage() {
         </div>
 
         {/* Balance */}
-        <div className="bg-white p-8 rounded-2xl shadow-sm flex justify-between">
+        <div className="bg-white p-8 rounded-2xl shadow-sm flex justify-between items-center">
           <div>
-            <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">
-              <History size={16} /> Balance
+            <div className="flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider mb-1">
+              <History size={14} /> Available Tokens
             </div>
-            <div className="text-4xl font-black text-[#1F2937]">{tokens}</div>
+            <div className="text-5xl font-black text-[#1F2937] tabular-nums">
+              {loading ? "..." : balance}
+            </div>
           </div>
 
           <Link
             href="/profile/billing"
-            className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-xl"
+            className="flex items-center gap-3 bg-[#1F2937] text-white px-8 py-4 rounded-[20px] font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-[#F97316] transition-all"
           >
-            <CreditCard size={16} />
+            <CreditCard size={18} />
             Buy Tokens
-            <ArrowUpRight size={16} />
+            <ArrowUpRight size={18} />
           </Link>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400">Date</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400">Type</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400">Action</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 text-right">Amount</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 text-right">Balance</th>
-              </tr>
-            </thead>
+        <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+          <div className="px-8 py-6 border-b border-gray-50">
+            <h2 className="text-lg font-bold text-[#1F2937]">Transaction Ledger</h2>
+            <p className="text-xs text-gray-400 font-medium mt-1">History of all credits, debits and purchases</p>
+          </div>
 
-            <tbody>
-              {sortedTransactions.map((tx) => (
-                <tr key={tx.id} className="border-b">
-                  <td className="px-6 py-4 text-sm">
-                    {new Date(tx.date).toLocaleString()}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span className={`text-xs font-bold ${
-                      tx.type === 'debit' ? 'text-red-500' : 'text-green-600'
-                    }`}>
-                      {tx.type}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4">{tx.description}</td>
-
-                  <td className="px-6 py-4 text-right font-bold">
-                    {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
-                  </td>
-
-                  <td className="px-6 py-4 text-right font-bold">
-                    {tx.balance}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Type</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Action</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Amount</th>
+                  <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Balance After</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+
+              <tbody className="divide-y divide-gray-50">
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className="px-8 py-20 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="animate-spin text-[#F97316]" size={32} />
+                        <p className="text-sm font-bold text-gray-400">Loading your ledger...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-8 py-20 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                          <History className="text-gray-200" size={32} />
+                        </div>
+                        <p className="text-sm font-bold text-gray-400">No transactions recorded yet.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  transactions.map((tx) => (
+                    <tr key={tx.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-8 py-5 text-sm font-medium text-gray-600">
+                        {new Date(tx.createdAt).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+
+                      <td className="px-8 py-5">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                          tx.type === 'debit' 
+                            ? 'bg-red-50 text-red-600 border border-red-100' 
+                            : 'bg-green-50 text-green-600 border border-green-100'
+                        }`}>
+                          {tx.type}
+                        </span>
+                      </td>
+
+                      <td className="px-8 py-5 text-sm font-bold text-[#1F2937]">
+                        {tx.action}
+                      </td>
+
+                      <td className={`px-8 py-5 text-right font-black tabular-nums ${
+                        tx.amount > 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
+                      </td>
+
+                      <td className="px-8 py-5 text-right font-black text-[#1F2937] tabular-nums">
+                        {tx.balanceAfter}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
       </div>

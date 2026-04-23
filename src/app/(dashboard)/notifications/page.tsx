@@ -1,18 +1,21 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import NotificationList from '@/components/NotificationList';
 import { useNotifications } from '@/components/NotificationProvider';
 import { NotificationSkeleton, EmptyState, ErrorState } from '@/components/Skeleton';
-import { Bell, RefreshCw } from 'lucide-react';
+import { Bell } from 'lucide-react';
+
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
 
 export default function NotificationsPage() {
+  const isLocked = true; // Feature lock enabled
   const { notifications, markAsRead, markAllAsRead, unreadCount, addNotification, refreshNotifications } = useNotifications();
   const [initialLoading, setInitialLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
 
-  const fetchUpdatedNotifications = async (isBackground = false) => {
+  const fetchUpdatedNotifications = useCallback(async (isBackground = false) => {
     if (!isBackground) setInitialLoading(true);
     else setRefreshing(true);
     
@@ -25,24 +28,30 @@ export default function NotificationsPage() {
           time: 'Just now'
         });
       }
-    } catch (err) {
+    } catch {
       if (!isBackground) setError(true);
     } finally {
       if (!isBackground) setInitialLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [refreshNotifications, addNotification]);
 
   useEffect(() => {
-    fetchUpdatedNotifications();
+    // Defer initial fetch to avoid synchronous setState warning in effect body
+    const initTimer = setTimeout(() => {
+      fetchUpdatedNotifications();
+    }, 0);
     
     // Auto-refresh notifications every 60 seconds
     const interval = setInterval(() => {
       fetchUpdatedNotifications(true);
     }, 60000);
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(interval);
+    };
+  }, [fetchUpdatedNotifications]);
 
   const handleLoadMore = () => {
     setLoadingMore(true);
@@ -54,7 +63,9 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full bg-white p-6 sm:p-10 overflow-y-auto">
+    <div className={`relative flex-1 flex flex-col w-full bg-white ${isLocked ? 'h-screen overflow-hidden' : 'h-full'}`}>
+      {isLocked && <FeatureLockedOverlay />}
+      <div className={`flex-1 flex flex-col w-full p-6 sm:p-10 transition-all duration-700 ${isLocked ? 'pointer-events-none blur-md overflow-hidden' : 'overflow-y-auto'}`}>
       
       {/* Top Bar Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
@@ -126,6 +137,7 @@ export default function NotificationsPage() {
 
       {/* Bottom spacing for scrollability */}
       <div className="h-20 shrink-0" />
+    </div>
     </div>
   );
 }

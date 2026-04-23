@@ -10,9 +10,10 @@ export interface Message {
 
 interface ChatAreaProps {
   messages: Message[];
+  userName?: string | null;
 }
 
-export default function ChatArea({ messages }: ChatAreaProps) {
+export default function ChatArea({ messages, userName }: ChatAreaProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
 
@@ -35,7 +36,9 @@ export default function ChatArea({ messages }: ChatAreaProps) {
             <div className="w-16 h-16 rounded-2xl bg-brand-accent/10 flex items-center justify-center mb-6 border border-brand-accent/20">
               <Sparkles size={32} className="text-brand-accent" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">Welcome to DealCollab AI</h2>
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              Welcome{userName ? `, ${userName}` : ''} to DealCollab AI
+            </h2>
             <p className="text-brand-secondary text-[16px] max-w-md font-medium leading-relaxed">
               I'm your intelligent assistant for analyzing deals, reviewing proposals, and gathering insights. 
               How can I help you today?

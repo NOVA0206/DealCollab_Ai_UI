@@ -1,6 +1,7 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useNotifications } from './NotificationProvider';
+import { useSession, signOut } from 'next-auth/react';
 
 interface UserContextType {
   tokens: number;
@@ -37,10 +38,12 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { addNotification } = useNotifications();
+  const { data: session, status } = useSession();
   
-  const [tokens, setTokens] = useState(250);
+  const [tokens, setTokens] = useState(0);
   const [approvedDeals, setApprovedDeals] = useState<number[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [globalError, setGlobalError] = useState<string | null>(null);
   
   const [onboarding, setOnboardingState] = useState({
     phoneVerified: false,
@@ -58,116 +61,115 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     additional: 0,
   });
 
-  // Hydrate from localStorage on mount to prevent hydration mismatch
+  // Sync with NextAuth session (REAL DATA)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      const isPhoneVerified = localStorage.getItem('phoneVerified') === 'true';
-      
+    if (status === 'authenticated' && session?.user) {
       queueMicrotask(() => {
-        if (isLoggedIn) setIsAuthenticated(true);
-        if (isPhoneVerified) {
-          setOnboardingState(prev => ({ ...prev, phoneVerified: true }));
-          setReadinessScore(prev => ({ ...prev, phone: 25 }));
-        }
+        setIsAuthenticated(true);
+        // @ts-expect-error: tokens property added to session user via callbacks
+        setTokens(session.user.tokens || 0);
+        
+        setOnboardingState(prev => ({
+          ...prev,
+          // @ts-expect-error: isPhoneVerified property added to session user via callbacks
+          phoneVerified: session.user.isPhoneVerified === true || String(session.user.isPhoneVerified) === 'true',
+          // @ts-expect-error: profileCompletion property added to session user via callbacks
+          profileCompleted: (session.user.profileCompletion || 0) >= 100,
+        }));
+      });
+    } else if (status === 'unauthenticated') {
+      queueMicrotask(() => {
+        setIsAuthenticated(false);
+        setTokens(0);
       });
     }
-  }, []);
+  }, [status, session]);
 
   const login = useCallback(() => {
     setIsAuthenticated(true);
-    localStorage.setItem('isLoggedIn', 'true');
   }, []);
 
-  const [globalError, setGlobalError] = useState<string | null>(null);
-
-  const logout = useCallback((reason?: 'session_expired' | 'link_expired') => {
+  const logout = useCallback(async (reason?: 'session_expired' | 'link_expired') => {
     setIsAuthenticated(false);
-    
-    // Clear all auth-related keys
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('phoneVerified');
-      localStorage.removeItem('auth');
-      
-      // If manual logout, show notification
-      if (!reason) {
-        addNotification({
-          type: 'success',
-          message: 'Logged out successfully',
-          time: 'Just now'
-        });
-      }
-    }
-
     setOnboardingState({
       phoneVerified: false,
       profileCompleted: false,
       dealSubmitted: false,
     });
     
-    // Redirect with reason or success flag
-    const redirectUrl = reason ? `/?error=${reason}` : '/?logout=success';
-    window.location.href = redirectUrl;
-  }, [addNotification]);
-
-  const [hasReceivedReward, setHasReceivedReward] = useState(false);
-
-  const checkAndRewardProfileCompletion = useCallback((currentReadiness: typeof readinessScore) => {
-    const score = Object.values(currentReadiness).reduce((a, b) => a + b, 0);
-    if (score === 100 && !hasReceivedReward) {
-      setHasReceivedReward(true);
-      setTokens(prev => prev + 100);
-      setOnboardingState(prev => ({ ...prev, profileCompleted: true }));
-      addNotification({
-        type: 'tokens_credited',
-        message: '100 tokens added to your account for profile completion.',
-        time: 'Just now'
-      });
-    }
-  }, [hasReceivedReward, addNotification]);
+    await signOut({ 
+      callbackUrl: reason ? `/?error=${reason}` : '/?logout=success',
+      redirect: true 
+    });
+  }, []);
 
   const setOnboarding = useCallback((step: 'phoneVerified' | 'profileCompleted' | 'dealSubmitted', value: boolean) => {
     setOnboardingState(prev => {
       if (prev[step] === value) return prev;
       return { ...prev, [step]: value };
     });
-    if (step === 'phoneVerified' && value) {
-      localStorage.setItem('phoneVerified', 'true');
-      setReadinessScore(prev => {
-        const next = { ...prev, phone: 25 };
-        checkAndRewardProfileCompletion(next);
-        return next;
-      });
-    }
-  }, [checkAndRewardProfileCompletion]);
+  }, []);
 
   const updateReadiness = useCallback((key: keyof typeof readinessScore, value: number) => {
     setReadinessScore(prev => {
       if (value > prev[key]) {
-        const next = { ...prev, [key]: value };
-        checkAndRewardProfileCompletion(next);
-        return next;
+        return { ...prev, [key]: value };
       }
       return prev;
     });
-  }, [checkAndRewardProfileCompletion]);
+  }, []);
 
   const totalScore = useMemo(() => Object.values(readinessScore).reduce((a, b) => a + b, 0), [readinessScore]);
 
   const isEOIApproved = useCallback((dealId: number) => approvedDeals.includes(dealId), [approvedDeals]);
 
-  const approveEOI = useCallback((dealId: number) => {
-    setTokens(prev => {
-      if (prev >= 50 && !approvedDeals.includes(dealId)) {
+  const approveEOI = useCallback(async (dealId: number) => {
+    if (approvedDeals.includes(dealId)) return;
+    if (tokens < 50) {
+      addNotification({
+        type: 'error',
+        message: 'Insufficient tokens to connect with this deal.',
+        time: 'Just now'
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/profile/tokens', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'debit',
+          action: 'Connection with Deal',
+          amount: 50
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setTokens(data.balance);
         setApprovedDeals(d => [...d, dealId]);
-        return prev - 50;
+        addNotification({
+          type: 'success',
+          message: 'Connection approved! 50 tokens debited.',
+          time: 'Just now'
+        });
+      } else {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to approve connection');
       }
-      return prev;
-    });
-  }, [approvedDeals]);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong.';
+      addNotification({
+        type: 'error',
+        message: errorMessage,
+        time: 'Just now'
+      });
+    }
+  }, [approvedDeals, tokens, addNotification]);
 
   const addTokens = useCallback((amount: number) => {
+    // Note: Tokens are actually added via the Profile API now for rewards
     setTokens(prev => prev + amount);
     addNotification({
       type: 'tokens_credited',

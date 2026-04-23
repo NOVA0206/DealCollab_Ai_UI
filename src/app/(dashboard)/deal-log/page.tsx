@@ -1,13 +1,12 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import DealLogCard from '@/components/DealLogCard';
 import { DealLogSkeleton, EmptyState, ErrorState } from '@/components/Skeleton';
-import MatchDetailsModal from '@/components/MatchDetailsModal';
 import { DealStatus } from '@/components/StatusBadge';
 import { Match } from '@/components/MatchWindow';
 import { useNotifications } from '@/components/NotificationProvider';
-import { Search, Filter, X, RefreshCw, Layers, Radio } from 'lucide-react';
+import { Search, X, Layers } from 'lucide-react';
 
 interface Deal {
   id: number;
@@ -69,7 +68,10 @@ const fetchDealsData = async (): Promise<Deal[]> => {
   ];
 };
 
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
+
 export default function DealLogPage() {
+  const isLocked = true; // Feature lock enabled
   const router = useRouter();
   const { addNotification } = useNotifications();
   const [deals, setDeals] = useState<Deal[]>([]);
@@ -80,11 +82,7 @@ export default function DealLogPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'All' | 'Searching Match' | 'Matched'>('All');
   
-  // Modal state
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const getData = async (isBackground = false) => {
+  const getData = useCallback(async (isBackground = false) => {
     if (!isBackground) setLoading(true);
     else setRefreshing(true);
 
@@ -99,23 +97,29 @@ export default function DealLogPage() {
           time: 'Just now'
         });
       }
-    } catch (err) {
+    } catch {
       if (!isBackground) setError(true);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [addNotification]);
 
   useEffect(() => {
-    getData();
+    // Defer initial fetch to avoid synchronous setState warning in effect body
+    const initTimer = setTimeout(() => {
+      getData();
+    }, 0);
 
     const interval = setInterval(() => {
       getData(true);
     }, 45000); // 45 seconds Log refresh
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearTimeout(initTimer);
+      clearInterval(interval);
+    };
+  }, [getData]);
 
   const handleDelete = (id: number) => {
     setDeals(prev => prev.filter(deal => deal.id !== id));
@@ -150,7 +154,9 @@ export default function DealLogPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full bg-white p-6 sm:p-10 overflow-y-auto">
+    <div className={`relative flex-1 flex flex-col w-full bg-white ${isLocked ? 'h-screen overflow-hidden' : 'h-full'}`}>
+      {isLocked && <FeatureLockedOverlay />}
+      <div className={`flex-1 flex flex-col w-full p-6 sm:p-10 transition-all duration-700 ${isLocked ? 'pointer-events-none blur-md overflow-hidden' : 'overflow-y-auto'}`}>
       
       {/* Top Bar Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
@@ -255,6 +261,7 @@ export default function DealLogPage() {
       </div>
 
       <div className="h-20 shrink-0" />
+    </div>
     </div>
   );
 }

@@ -7,17 +7,26 @@ import PremiumAccess from '@/components/intelligence/PremiumAccess';
 import TrustLayer from '@/components/intelligence/TrustLayer';
 import IntelligenceVideoBackground from '@/components/intelligence/IntelligenceVideoBackground';
 
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
+
 export default function DealIntelligencePage() {
+  const isLocked = true; // Feature lock enabled
+
   return (
-    <div className="relative flex-1 w-full min-h-screen bg-[#0B0F1A] overflow-x-hidden overflow-y-auto scrollbar-hide">
+    <div className={`relative flex-1 w-full min-h-screen bg-[#0B0F1A] transition-all duration-700 ${isLocked ? 'h-screen overflow-hidden pointer-events-none' : 'overflow-x-hidden overflow-y-auto scrollbar-hide'}`}>
+      {isLocked && <FeatureLockedOverlay />}
       {/* Background layer */}
       <IntelligenceVideoBackground />
       
       {/* Content orchestration */}
-      <div className="relative flex flex-col w-full pb-32">
+      <div className={`relative flex flex-col w-full pb-20 transition-all duration-700 ${isLocked ? 'blur-md pointer-events-none' : ''}`}>
         <HeroSection />
-        <IntelligenceStrip />
-        <IntelligenceModules />
+        <div className="-mt-20">
+          <IntelligenceStrip />
+        </div>
+        <div className="-mt-16">
+          <IntelligenceModules />
+        </div>
         <PremiumAccess />
         <TrustLayer />
       </div>

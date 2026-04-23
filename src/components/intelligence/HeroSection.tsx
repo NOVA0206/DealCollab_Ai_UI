@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 
 export default function HeroSection() {
   return (
-    <section className="relative z-30 pt-32 pb-20 px-8 flex flex-col items-center text-center max-w-5xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000">
+    <section className="relative z-30 pt-24 pb-10 px-8 flex flex-col items-center text-center max-w-5xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-1000">
       <div className="space-y-4">
         <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight drop-shadow-2xl">
           Know the Market <br /> Before the Market Knows It

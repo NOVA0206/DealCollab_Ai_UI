@@ -47,7 +47,10 @@ const fetchDashboardData = async (): Promise<DashboardDeal[]> => {
   ];
 };
 
+import FeatureLockedOverlay from '@/components/FeatureLockedOverlay';
+
 export default function DealDashboardPage() {
+  const isLocked = true; // Feature lock enabled
   const { addNotification } = useNotifications();
   const [data, setData] = useState<DashboardDeal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,7 +112,9 @@ export default function DealDashboardPage() {
   const myProposals = data.filter(item => !item.isIncoming);
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full relative overflow-y-auto bg-white p-6 sm:p-10">
+    <div className={`relative flex-1 flex flex-col w-full bg-white ${isLocked ? 'h-screen overflow-hidden' : 'h-full'}`}>
+      {isLocked && <FeatureLockedOverlay />}
+      <div className={`flex-1 flex flex-col w-full p-6 sm:p-10 transition-all duration-700 relative ${isLocked ? 'pointer-events-none blur-md overflow-hidden' : 'overflow-y-auto'}`}>
       
       {/* Top Bar Section */}
       <div className="flex justify-between items-center mb-10">
@@ -199,6 +204,7 @@ export default function DealDashboardPage() {
         dealName={eoiModal.deal?.deal || ''}
         onSuccess={handleEOISuccess}
       />
+    </div>
     </div>
   );
 }

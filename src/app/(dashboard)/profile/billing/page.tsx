@@ -1,49 +1,61 @@
 'use client';
 import React, { useState } from 'react';
-import { useUser } from '@/components/UserProvider';
+import { useRouter } from 'next/navigation';
 import { 
-  Coins, CreditCard, Check, ArrowRight,
-  TrendingUp, ShieldCheck, Zap
+  Coins, CreditCard, ArrowRight,
+  TrendingUp, ShieldCheck, Home
 } from 'lucide-react';
 
 export default function BillingPage() {
-  const { tokens, addTokens } = useUser();
+  const router = useRouter();
+  const tokens = 0; // Static display or from provider
   const [selectedPlan, setSelectedPlan] = useState<number>(250);
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const plans = [
-    { id: 100, tokens: 100, price: '$49', description: 'Quick Start', icon: <Zap size={20} /> },
-    { id: 250, tokens: 250, price: '$99', description: 'Most Popular', icon: <TrendingUp size={20} />, recommended: true },
-    { id: 500, tokens: 500, price: '$179', description: 'Best Value', icon: <ShieldCheck size={20} /> }
+    { id: 250, tokens: 250, price: '₹8,299', description: 'Most Popular', icon: <TrendingUp size={20} />, recommended: true },
+    { id: 500, tokens: 500, price: '₹14,999', description: 'Best Value', icon: <ShieldCheck size={20} /> }
   ];
 
   const handlePurchase = () => {
-    addTokens(selectedPlan);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 5000);
+    setShowModal(true);
   };
 
   return (
     <div className="flex-1 flex flex-col w-full h-full bg-white relative overflow-y-auto">
       
-      {/* SUCCESS BANNER */}
-      {showSuccess && (
-        <div className="sticky top-0 z-50 bg-green-50 border-b border-green-100 p-4 animate-in slide-in-from-top duration-500">
-          <div className="max-w-4xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-green-100 text-green-600 p-1.5 rounded-lg">
-                <Check size={18} />
-              </div>
-              <p className="text-sm font-bold text-green-800">
-                Purchase successful! {selectedPlan} tokens have been added to your balance.
-              </p>
+      {/* PAYMENTS COMING SOON MODAL */}
+      {showModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+          {/* Dark Backdrop (No Blur) */}
+          <div className="absolute inset-0 bg-[#0B0F1A]/95" onClick={() => setShowModal(false)} />
+          
+          {/* Modal Card */}
+          <div className="relative z-10 max-w-sm w-full bg-[#1F2937] rounded-[40px] p-10 border border-white/10 text-center shadow-[0_32px_80px_rgba(0,0,0,0.5)] animate-in zoom-in slide-in-from-bottom-8 duration-500">
+            <div className="w-20 h-20 bg-[#F97316]/10 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-[#F97316]/20">
+              <CreditCard className="text-[#F97316]" size={32} />
             </div>
-            <button 
-              onClick={() => setShowSuccess(false)}
-              className="text-xs font-bold text-green-600 hover:underline"
-            >
-              Dismiss
-            </button>
+            
+            <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">Payments Coming Soon</h3>
+            <p className="text-gray-400 text-sm leading-relaxed mb-10 px-4">
+              We are finalizing our secure payment gateway. This feature will be accessible very soon.
+            </p>
+            
+            <div className="flex flex-col gap-3">
+              <button 
+                onClick={() => router.push('/home')}
+                className="w-full py-4 bg-[#F97316] text-white rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                <Home size={16} /> Go Back Home
+              </button>
+              
+              <button 
+                onClick={() => setShowModal(false)}
+                className="w-full py-4 bg-white/5 text-gray-400 rounded-2xl text-xs font-black uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -86,15 +98,15 @@ export default function BillingPage() {
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-[#1F2937]">Select Token Package</h2>
-            <span className="text-xs font-bold text-[#F97316] bg-[#F97316]/10 px-3 py-1 rounded-full">Secure Payment via Stripe</span>
+            <span className="text-xs font-bold text-[#F97316] bg-[#F97316]/10 px-3 py-1 rounded-full">Secure Payment via Razorpay</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {plans.map((plan) => (
               <button
                 key={plan.id}
                 onClick={() => setSelectedPlan(plan.id)}
-                className={`relative flex flex-col p-6 rounded-[32px] border-2 transition-all duration-300 text-left group ${
+                className={`relative flex flex-col p-8 rounded-[32px] border-2 transition-all duration-300 text-left group ${
                   selectedPlan === plan.id 
                     ? 'border-[#F97316] bg-white shadow-xl scale-[1.02]' 
                     : 'border-gray-100 bg-white hover:border-gray-200'
@@ -106,28 +118,28 @@ export default function BillingPage() {
                   </div>
                 )}
                 
-                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 transition-colors ${
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${
                   selectedPlan === plan.id ? 'bg-[#F97316] text-white' : 'bg-gray-50 text-gray-400 group-hover:bg-gray-100'
                 }`}>
                   {plan.icon}
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-8">
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{plan.description}</p>
-                  <p className="text-2xl font-bold text-[#1F2937]">{plan.tokens} Tokens</p>
+                  <p className="text-3xl font-bold text-[#1F2937]">{plan.tokens} Tokens</p>
                 </div>
 
-                <div className="mt-auto pt-6 border-t border-gray-50">
-                  <p className="text-3xl font-black text-[#1F2937]">{plan.price}</p>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase mt-1">One-time payment</p>
+                <div className="mt-auto pt-8 border-t border-gray-50 flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-[#1F2937]">{plan.price}</p>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase">One-time</p>
                 </div>
 
-                <div className={`mt-6 w-full py-3 rounded-xl text-center text-xs font-black uppercase tracking-widest transition-all ${
+                <div className={`mt-8 w-full py-4 rounded-2xl text-center text-[10px] font-black uppercase tracking-[0.15em] transition-all ${
                   selectedPlan === plan.id 
-                    ? 'bg-[#F97316] text-white shadow-lg' 
+                    ? 'bg-[#F97316] text-white shadow-lg shadow-[#F97316]/20' 
                     : 'bg-gray-50 text-gray-400 group-hover:bg-gray-100'
                 }`}>
-                  {selectedPlan === plan.id ? 'Selected' : 'Buy Now'}
+                  {selectedPlan === plan.id ? 'Selected Package' : 'Proceed to Payment'}
                 </div>
               </button>
             ))}
@@ -142,7 +154,7 @@ export default function BillingPage() {
             </div>
             <div>
               <p className="text-sm font-bold text-[#1F2937]">Checkout Securely</p>
-              <p className="text-xs text-gray-500 font-medium tracking-tight">Visa, Mastercard, Amex, Apple Pay</p>
+              <p className="text-xs text-gray-500 font-medium tracking-tight">Netbanking, UPI, Cards supported</p>
             </div>
           </div>
           

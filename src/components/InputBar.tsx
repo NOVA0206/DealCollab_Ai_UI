@@ -12,7 +12,7 @@ export default function InputBar({ onSendMessage }: InputBarProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
-  const isDisabled = totalScore < 100;
+  const isDisabled = false; // Profile completion requirement removed as per user request
 
   const handleSubmit = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -56,7 +56,7 @@ export default function InputBar({ onSendMessage }: InputBarProps) {
           disabled={isDisabled}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isDisabled ? `Complete your profile (Currently ${totalScore}%) to unlock chat` : "Submit / Describe your Proposal"} 
+          placeholder="Submit / Describe your Proposal" 
           className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-brand-secondary px-4 text-[15px] disabled:cursor-not-allowed transition-all duration-300"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -76,13 +76,7 @@ export default function InputBar({ onSendMessage }: InputBarProps) {
       </form>
 
       <div className="text-center mt-3">
-        <p className="text-xs text-brand-secondary font-medium flex items-center justify-center gap-1">
-          {isDisabled ? (
-            <span className="flex items-center gap-1 text-[#F97316]"><Lock size={12} /> 100% Profile completion required for AI access</span>
-          ) : (
-            <span className="flex items-center gap-1"><Sparkles size={12} className="text-[#F97316]" /> AI ready to analyze your proposals</span>
-          )}
-        </p>
+          <span className="flex items-center gap-1"><Sparkles size={12} className="text-[#F97316]" /> AI ready to analyze your proposals</span>
       </div>
     </div>
   );

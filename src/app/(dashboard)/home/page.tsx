@@ -2,10 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import ChatArea, { Message } from "@/components/ChatArea";
 import InputBar from "@/components/InputBar";
-import OnboardingChecklist from "@/components/OnboardingChecklist";
+import { useSession } from 'next-auth/react';
 import { ChatSkeleton } from '@/components/Skeleton';
 
 export default function Home() {
+  const { data: session } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,13 +43,14 @@ export default function Home() {
       {/* Scrollable Container */}
       <div className="flex-1 overflow-y-auto px-6 sm:px-10 pb-[140px] pt-10 min-h-0">
         <div className="max-w-4xl mx-auto w-full space-y-12">
-          
-          <OnboardingChecklist />
-          
+
           {loading ? (
             <ChatSkeleton />
           ) : (
-            <ChatArea messages={messages} />
+            <ChatArea 
+              messages={messages} 
+              userName={session?.user?.name}
+            />
           )}
         </div>
       </div>
